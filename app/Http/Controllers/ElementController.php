@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Element;
 use Carbon\Carbon;
+use Faker\Provider\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Log;
-use Intervention\Image\Facades\Image;
 
 class ElementController extends Controller
 {
@@ -92,6 +92,11 @@ class ElementController extends Controller
     public function update(Request $request, $id)
     {
         $element =  Element::findOrFail($id);
+        if (Input::has('path_imatge_element')){
+            if ($element->path_imatge_element <> Input::get('path_imatge_element')){
+                self::esborrarImatge($element->path_imatge_element);
+            }
+        }
         $element->fill(Input::only($element->fillable))->save();
         return redirect('api/inici')->with('success', 'Element modificat!');
     }
@@ -111,46 +116,37 @@ class ElementController extends Controller
 
     public function changeImage(Request $request, $id)
     {
+        $nou_fitxer = '';
         $file = Input::file('uploadImage');
-        Log::("Arriba0");
+        if (isset($file)){
+            $destinationPath = '/img/';
+            $filename = 'id_' . $id . '_' . str_slug(preg_replace('/\\.[^.\\s]{3,4}$/', '', $file->getClientOriginalName()));
+            $extension = strtolower($file->getClientOriginalExtension());
+            $full_filename = $filename . '.' . $extension;
+            $i = 1;
 
-        $destinationPath = '/img';
-        $filename = 'id_' . $id . '_' . str_slug(preg_replace('/\\.[^.\\s]{3,4}$/', '', $file->getClientOriginalName()));
-        $extension = strtolower($file->getClientOriginalExtension());
-        $full_filename = $filename . '.' . $extension;
-        $i = 1;
+            while (File::exists(public_path($destinationPath) . '/' . $full_filename) == true) {
+                $full_filename = $filename . '_' . $i . '.' . $extension;
+                $i++;
+            }
+            if (!is_dir(public_path($destinationPath))) {
+                $newDir = public_path($destinationPath);
+                File::makeDirectory($newDir, 0755, true);
+            }
+            if (substr($file->getMimeType(), 0, 5) == 'image') {
+                $img = \Intervention\Image\Facades\Image::make($file->getRealPath());
+                $nou_fitxer = $destinationPath . $full_filename;
+                $img->save(public_path() . $nou_fitxer);
 
-        Log::info("Arriba1");
-        while (File::exists(public_path($destinationPath) . '/' . $full_filename) == true) {
-            $full_filename = $filename . '_' . $i . '.' . $extension;
-            $i++;
+            }
         }
-        Log::info("Arriba1");
-        if (!is_dir(public_path($destinationPath))) {
-            $newDir = public_path($destinationPath);
-            File::makeDirectory($newDir, 0755, true);
-        }
-        Log::info("Arriba4");
-        if (substr($file->getMimeType(), 0, 5) == 'image') {
-
-            //Si es una imágen la redimensionamos
-            $img = Image::make($file->getRealPath());
-            $img->save(public_path() . $destinationPath . $full_filename);
-        }
-
+        return response()->json(['path_imatge' => $nou_fitxer]);
     }
 
-    public function esborrarImatge($id)
+    public function esborrarImatge($file)
     {
-        $file = Input::get('uploadImage', '/img/noimage.png');
         if (strtolower($file) <> '/img/noimage.png' && strtolower($file) <> '/img/noimage.png') {
             File::delete(public_path() . $file);
         }
-        $element = Element::find($id);;
-        if (isset($element)){
-            $element->path_imatge_element = '/img/noimage.png';
-            $element->save();
-        }
-        return redirect('api/element/'.$id.'/edit');
     }
 }

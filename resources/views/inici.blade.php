@@ -19,7 +19,7 @@
                         <td>{{$element->titol_element}}</td>
                         <td>{{$element->desc_element}}</td>
                         <td>
-                            <a href="{{ route('element.edit',$element->id_mst_element)}}" class="btn btn-primary">Modificar</a>
+                            <a href="{{ route('element.edit',$element->id_mst_element)}}" class="btn btn-primary">Editar</a>
                         </td>
                         <td>
                             <form action="{{ route('element.destroy', $element->id_mst_element)}}" method="post">

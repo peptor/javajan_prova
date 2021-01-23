@@ -22,7 +22,8 @@ class Element extends Model
         'titol_element',
         'desc_element',
         'html_element',
-        'date_element'
+        'date_element',
+        'path_imatge_element'
     ];
 
 }

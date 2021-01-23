@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 //Route::resource('element', 'ElementoController');
 Route::resource('element', 'ElementController');
 Route::post('element/{id}/changeImage', 'ElementController@changeImage');
-Route::get('element/esborrarImatge/{id}', 'ElementController@esborrarImatge');
 Route::get('inici', 'IniciController@llista');
 
 

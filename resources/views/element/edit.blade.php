@@ -3,18 +3,32 @@
 
     function uploadImatge()
     {
-        var id_mst_element = 13;
         var fileInput = document.getElementById('imatgeUpload');
         var file = fileInput.files[0];
         var formData = new FormData();
         formData.append('uploadImage', file);
-        $.ajax({url: "changeImage", type: 'POST', data: formData, processData: false,
+        $.ajax({url: "changeImage",
+            type: 'POST',
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            data: formData,
             success: function(result){
-                $("#div1").html(result);
+                $("#imatge").attr("src",result['path_imatge']);
+                $("#path_imatge_element").attr("value",result['path_imatge']);
             }
         });
     }
 
+    function deleteImatge(){
+        $("#imatge").attr("src","/img/noimage.png");
+        $("#path_imatge_element").attr("value","/img/noimage.png");
+    }
+
+    function cancelChange()
+    {
+        window.location = '{{ url('/') }}';
+    }
 
 </script>
 
@@ -24,7 +38,6 @@
         <div class="col-sm-8 offset-sm-2">
             <h1>Modificar Element</h1>
             <form method="post" action="{{ route('element.update', $element->id_mst_element) }}">
-                @csrf
                 <div class="form-group">
                     <label for="titol_element">Titol:</label>
                     <input type="text" class="form-control" name="titol_element" value={{ $element->titol_element }} />
@@ -42,20 +55,27 @@
                     <input type="date" name="date_element"
                            value={{ $element->date_element }} >
                 </div>
+                <div class="form-group hidden">
+                    <label for="path_imatge_element"></label>
+                    <input id = "path_imatge_element" class="form-control" type="text" name="path_imatge_element"
+                           value={{ $element->path_imatge_element }} >
+                </div>
                 <div class="form-group">
                     <div class="thumbnail">
-                        <img id="imatge" src="{{ $element->path_imatge_element }}" alt="">
+                        <label for="imatge">Imatge:</label>
+                        <img id="imatge" src="{{ $element->path_imatge_element }}" >
                         <div>
                             <label for="imatgeUpload" class="btn-xs btn btn-primary btn-block btn-outlined textmin">Canviar imatge</label>
                             <input type="file" id="imatgeUpload" name="imatge" accept="image/*" onchange="uploadImatge()" style="display: none">
-                            <a href="{{ url("api/element/esborrarImatge/$element->id_mst_element") }}">Eliminar</a>
+                        </div>
+                        <div>
+                            <a class="btn-xs btn btn-danger btn-block btn-outlined textmin" onclick="deleteImatge()">Eliminar</a>
                         </div>
                     </div>
                 </div>
-
                 {{ method_field('PUT') }}
                 <button type="submit" class="btn btn-primary">Modificar</button>
-                <a href="{{ URL::previous() }}" class="btn btn-danger">Cancelar</a>
+                <a onclick="cancelChange()" class="btn btn-danger">Cancelar</a>
             </form>
         </div>
     </div>
